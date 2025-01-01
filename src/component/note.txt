@@ -1,0 +1,5 @@
+1. if user login and refresh the page, myRoom socket not work first time. (fix)
+3. delete read message from unreadMessage model (fix)
+2. when user close window then logout should be trigger.
+4. app crashed when conitinuie message sent.
+5. when server re-start then all connected user should be join 'myRoom'.
