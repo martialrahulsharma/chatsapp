@@ -18,6 +18,7 @@ function MyFriends() {
   const [isOpen, setIsOpen] = useState({ chatIsOpen: false, refresh: true });
   const [MesageBadge, setMessageBadge] = useState([]);
   const [unreadMessages, setUnreadMessage] = useState([]);
+  const [isUserJoinRoom, setIsUserJoinRoom] = useState(true);
 
   const navigate = useNavigate();
 
@@ -118,8 +119,7 @@ function MyFriends() {
         }
     }
 
-    const myRoomSocketHandler = (arrayOfUnreadMessages) => {
-      setMessageBadge(arrayOfUnreadMessages);
+    const myFriendJoinRoom = (arrayOfUnreadMessages) => {
       console.log(arrayOfUnreadMessages);
     }
 
@@ -132,16 +132,18 @@ function MyFriends() {
       setTimeout(() => {
         if (mySocket.connected && user.username)
           mySocket.emit("myRoom", user.username);
+          // setIsUserJoinRoom(false)
+          console.log("123456789");
       }, 1000);
       getFriendListData();
       // Remove existing listener to avoid duplicates
       mySocket.off("isLoggedIn", isLoggedInUserDataHandler);
-      mySocket.off("myRoom", myRoomSocketHandler);
-      mySocket.off("unreadMessages", unreadMessageSocketHandler);
+      mySocket.off("myRoom", unreadMessageSocketHandler);
+      mySocket.off("myFriendJoinRoom", myFriendJoinRoom);
       // add listener
       mySocket.on("isLoggedIn", isLoggedInUserDataHandler);
-      mySocket.on("myRoom", myRoomSocketHandler);
-      mySocket.on("unreadMessages", unreadMessageSocketHandler);
+      mySocket.on("myRoom", unreadMessageSocketHandler);
+      mySocket.on("myFriendJoinRoom", myFriendJoinRoom);
     }
 
     // mySocket.off("myRomm");
@@ -149,11 +151,11 @@ function MyFriends() {
     return () => {
       if (mySocket) {
         mySocket.off("isLoggedIn", isLoggedInUserDataHandler);
-        mySocket.off("myRoom", myRoomSocketHandler);
-        mySocket.off("unreadMessages", unreadMessageSocketHandler);
+        mySocket.off("myRoom", unreadMessageSocketHandler);
+        mySocket.off("myFriendJoinRoom", myFriendJoinRoom);
       }
     };
-  }, [mySocket, MesageBadge]);
+  }, [mySocket]);
 
   return (
     <div>

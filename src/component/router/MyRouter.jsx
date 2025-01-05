@@ -20,7 +20,7 @@ function MyRouter() {
       </div>
       <Router>
       <div className="flex">
-        <Navbar navBarHidden={navBarHidden} />za
+        <Navbar navBarHidden={navBarHidden} />
         <div className="flex-grow w-2/4">
           <Routes>
             <Route path="/" element={<Login/>} />

@@ -30,8 +30,6 @@ function ChatRoom({ friendUsername, showChatArea, chatBoxOff }) {
       sender: user.username,
     }));
     mySocket.emit("send_message", roomId, message, user2);
-    console.log(roomId);
-    console.log("send message");      
     setMessage((prev) => ({
       ...prev,
       message: "",
