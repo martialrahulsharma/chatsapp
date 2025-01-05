@@ -81,7 +81,7 @@ io.on("connection", (socket) => {
     
     // when user login then join his/her room
     const myRoomSocketHandler = async (username) => {
-      console.log(username, "join room");
+      console.log(username, "joined room");
       socket.join(username);
       // after login unread message will run
       // Fetch unread messages
@@ -100,7 +100,7 @@ io.on("connection", (socket) => {
             }
           );
           // Send unread messages to the specific client
-          socket.emit("unreadMessages", lengthOfUnreadMessages);
+          socket.emit("myRoom", lengthOfUnreadMessages);
         }
       } catch (error) {
         console.error("Error fetching unread messages:", error);
@@ -137,7 +137,7 @@ io.on("connection", (socket) => {
           await chat.save().then(() => {
             // console.log(chat.message);
             io.to(roomId).emit("receive_message", chat.message);
-            io.to(user2).emit("myRoom", `${user1} join room`);
+            io.to(user2).emit("myFriendJoinRoom", `${user1} joining room`);
           });
         }
       }
