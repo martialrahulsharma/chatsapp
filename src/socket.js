@@ -1,32 +1,3 @@
-// import { io } from "socket.io-client";
-
-// let socket;
-
-// const connectSocket = () => {
-//   if (!socket) {
-//     socket = io("http://localhost:3000", { transports: ["websocket"] });
-
-//     socket.on("connect", () => {
-//       console.log("Socket connected:", socket.id);
-//     });
-
-//     socket.on("disconnect", () => {
-//       console.log("Socket disconnected");
-//     });
-//   }
-//   return socket;
-// };
-
-// const disconnectSocket = () => {
-//   if (socket) {
-//     socket.disconnect();
-//     console.log("Socket disconnected");
-//   }
-// };
-
-// export { connectSocket, disconnectSocket };
-
-// socket.js
 import { io } from "socket.io-client";
 
 let socket;

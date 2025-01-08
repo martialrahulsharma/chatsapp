@@ -1,7 +1,6 @@
 import { useState, useEffect, createContext } from "react";
 import { jwtDecode } from "jwt-decode";
 import { connectSocket, disconnectSocket } from "../../socket.js";
-import { Socket } from "socket.io-client";
 
 export const AuthContext = createContext();
 
@@ -18,30 +17,27 @@ export const AuthProvider = ({ children }) => {
     return (socket = connectSocket());
   });
   const [isPopupOpen, setPopupOpen] = useState(true);
-
   useEffect(() => {
     console.log("context");
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwtDecode(token);
       const tokenExpiratioTime = decoded.exp * 1000;
-      if (Date.now() >= tokenExpiratioTime) {
+      if (Date.now() >= tokenExpiratioTime) {  
         console.log("Token has expired");
         logout();
       } else {
         console.log("Token is still valid");
         const socket = connectSocket();
-
+        socket.emit("login", token);
         if (socket) {
-          socket.off("connect");
+          // socket.off("connect");
           // Set up event listeners after socket is connected
           socket.on("connect", () => {
+            
             console.log("Socket connected:", socket.connected);
             setSocket(socket);
-            socket.emit("login", token); // Emit login event after connecting
-            // setTimeout(()=>{
-            //   socket.emit("myRoom", user.username);
-            // }, 1000)
+            // socket.emit("login", token); // Emit login event after connecting
           });
         }
         socket.off("connect")
