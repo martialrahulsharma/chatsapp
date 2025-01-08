@@ -29,7 +29,7 @@ export const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
+io.on("connection", (socket) => { 
   const loginHandler = async (token) => {
     try {
       const decoded = jwt.verify(token, jwtSecretKey);
@@ -82,6 +82,7 @@ io.on("connection", (socket) => {
     // when user login then join his/her room
     const myRoomSocketHandler = async (username) => {
       console.log(username, "joined room");
+      console.log(socket.username);
       socket.join(username);
       // after login unread message will run
       // Fetch unread messages
@@ -233,6 +234,7 @@ io.on("connection", (socket) => {
         });
       }
     };
+    // socket.off("disconnect")
     socket.off("login", loginHandler)
     socket.off("logout", logoutHandler)
     socket.off("leaveRoom", leaveRoomSocketHandler)
@@ -240,6 +242,7 @@ io.on("connection", (socket) => {
     socket.off("friendMessageIsRead", friendMessageIsReadHandler)
     socket.off("send_message", sendMessageSocketHandler);
     socket.off("myRoom", myRoomSocketHandler)
+    // socket.on("disconnect")
     socket.on("login", loginHandler)
     socket.on("logout", logoutHandler)
     socket.on("leaveRoom", leaveRoomSocketHandler)
