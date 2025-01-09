@@ -7,6 +7,7 @@ import UserProfile from "../UserProfile";
 import MyFriends from "../MyFriends";
 import ChatRoom from "../ChatRoom";
 import Navbar from "../Navbar";
+import Notification from '../Notification';
 import { AuthProvider } from "../authContext/AuthContext";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
@@ -29,6 +30,7 @@ function MyRouter() {
             <Route path="/myFriend" element={<MyFriends />} />
             <Route path="/addFriend" element={<AddFriend />} />
             <Route path="/chatRoom" element={<ChatRoom />} />
+            <Route path="/notification" element={<Notification />} />
           </Routes>
         </div>
       </div>

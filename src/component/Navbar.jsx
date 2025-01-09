@@ -37,6 +37,13 @@ const Navbar = ({ navBarHidden }) => {
           {user ? (
             <>
               <NavLink
+                to="/notification"
+                className="p-4 hover:bg-gray-700 hover:text-white"
+                onClick={() => setShowSidebar(!showSidebar)}
+              >
+                Notification
+              </NavLink>
+              <NavLink
                 to="/profile"
                 className="p-4 hover:bg-gray-700 hover:text-white"
                 onClick={() => setShowSidebar(!showSidebar)}
@@ -61,12 +68,9 @@ const Navbar = ({ navBarHidden }) => {
                 to="/"
                 className="p-4 hover:bg-gray-700 hover:text-white"
                 onClick={() => {
-                  setShowSidebar(!showSidebar);
-                  // mySocket.emit("logout");
-                  // mySocket.disconnect();
-                  // console.log("before logout");
+                  setShowSidebar(!showSidebar);                  
                   logout();
-                  // console.log("after logout");
+                  
                 }}
               >
                 Logout

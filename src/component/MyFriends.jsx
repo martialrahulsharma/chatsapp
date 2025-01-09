@@ -2,9 +2,6 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./authContext/AuthContext";
 import ChatRoom from "./ChatRoom";
-import { Socket } from "socket.io-client";
-// import io from "socket.io-client";
-// import {connectSocket} from "../socket.js"
 
 function MyFriends() {
   const [friendList, setFriendList] = useState([]);

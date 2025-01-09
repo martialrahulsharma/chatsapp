@@ -11,7 +11,7 @@ function AddFriend() {
     error: "",
     success: "",
   });
-  const { user } = useContext(AuthContext);
+  const { user, mySocket } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const findFriends = async (event) => {
@@ -38,27 +38,28 @@ function AddFriend() {
 
   const addFriendHandler = async (event, usernameOfFriend) => {
     event.preventDefault();
-    const res = await fetch("http://localhost:3000/addFriendInList", {
-      method: "POST",
-      headers: {
-        Authorization: `${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ usernameOfFriend }),
-    });
+    if(mySocket) mySocket.emit("notificationSocketHandler", usernameOfFriend, user.username)
+    // const res = await fetch("http://localhost:3000/addFriendInList", {
+    //   method: "POST",
+    //   headers: {
+    //     Authorization: `${localStorage.getItem("token")}`,
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({ usernameOfFriend }),
+    // });
 
-    const addFriendResponse = await res.json();
-    if (addFriendResponse.error) {
-      setMessage((prev)=>({
-        ...prev,
-        error: message.error = addFriendResponse.error,
-      }));
-    }else{
-      setMessage((prev)=>({
-        ...prev,
-        success: message.success = addFriendResponse.message,
-      }));
-    }
+    // const addFriendResponse = await res.json();
+    // if (addFriendResponse.error) {
+    //   setMessage((prev)=>({
+    //     ...prev,
+    //     error: message.error = addFriendResponse.error,
+    //   }));
+    // }else{
+    //   setMessage((prev)=>({
+    //     ...prev,
+    //     success: message.success = addFriendResponse.message,
+    //   }));
+    // }
   };
 
   useEffect(() => {
@@ -104,9 +105,9 @@ function AddFriend() {
               <label>{item}</label>
               <button
                 onClick={() => addFriendHandler(event, item)}
-                className="rounded-lg h-6 w-12 cursor-pointer bg-blue-800"
+                className="rounded-md h-6 px-1 cursor-pointer text-blue-800"
               >
-                Add
+                Request
               </button>
             </div>
           ))
