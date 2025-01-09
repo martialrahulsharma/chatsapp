@@ -13,9 +13,11 @@ import { SignupModel } from "./signupSchema.js";
 import { ProfileSchema } from "./profileSchema.js";
 import { AddedFriendListModel } from "./addedFriendListSchema.js";
 import { ChatRoomModel } from "./getChatsSchema.js";
+import { notificationSchemaModel } from "./notificationSchema.js";
 
 const router = express.Router();
 dotenv.config();
+
 const jwtKey = process.env.JWT_SECRET_KEY;
 
 router.post("/signup", async (req, res) => {
@@ -79,18 +81,6 @@ export const login = async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 };
-
-// const logout = async (req, res) => {
-//   console.log(req.body);
-//   const {user} = req.body;
-//   const data = await ProfileSchema.findOne({
-//     userId: user.username,
-//   }).exec();
-//   if (data) {
-//     data.isLoggedIn = false;
-//     await data.save();
-//   }
-// };
 
 router.post("/login", login);
 // router.post("/logout", logout);
@@ -231,6 +221,23 @@ router.post("/addFriendInList", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "Friend added successfully" });
   } catch (error) {
     res.send().json({ error: "Something went wrong, please visit developer" });
+  }
+});
+
+
+
+router.post("/getNotification", verifyToken, async (req, res) => {
+  try {
+    const {username} = req.body;
+    const data = await notificationSchemaModel.findOne({
+      username: username,
+    });
+    if (!data) {
+      return res.status(400).json({ error: "No any notifications" });
+    }
+    return res.json({data: data})
+  } catch (error) {
+    console.log(error);
   }
 });
 
