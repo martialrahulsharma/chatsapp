@@ -53,7 +53,8 @@ export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
     const existingUser = await SignupModel.findOne({ username });
-    if (!existingUser) {
+    
+    if (existingUser == null) {
       return res.status(401).json({ error: "Authentication failed" });
     }
     const passwordMatch = await bcrypt.compare(password, existingUser.password);
@@ -232,12 +233,13 @@ router.post("/getNotification", verifyToken, async (req, res) => {
     const data = await notificationSchemaModel.findOne({
       username: username,
     });
-    if (!data) {
+    if (data == null) {
       return res.status(400).json({ error: "No any notifications" });
     }
-    return res.json({data: data})
+    return res.json({data: data.notificationList})
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ error: "Something went wrong" });
   }
 });
 
