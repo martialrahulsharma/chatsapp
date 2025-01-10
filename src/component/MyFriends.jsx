@@ -128,7 +128,7 @@ function MyFriends() {
     if (mySocket) {
       setTimeout(() => {
         if (mySocket.connected && user.username)
-          mySocket.emit("myRoom", user.username);
+          // mySocket.emit("myRoom", user.username);
           // setIsUserJoinRoom(false)
           console.log("123456789");
       }, 1000);

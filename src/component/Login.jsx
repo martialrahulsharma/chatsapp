@@ -24,9 +24,9 @@ function Login() {
         body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
+      if (data.error) setError(data.error);
       if (data.accessToken.token) login(data.accessToken.token);
       if (data.status == "success") navigate("/myFriend");
-      if (data.error) setError(data.error);
       setShowMessage(true);
     } catch (error) {
       console.log(error);
@@ -43,7 +43,7 @@ function Login() {
   }, []);
 
   return (
-    <div>
+    <>
       <h2 className="m-auto text-xl font-bold">Login</h2>
       <div>
         <form
@@ -82,7 +82,7 @@ function Login() {
       <Link to={"/signup"} className="text-blue-700 font-bold">
         Create an account
       </Link>
-    </div>
+    </>
   );
 }
 

@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
         console.log("Token is still valid");
         const socket = connectSocket();
         socket.emit("login", token);
+        socket.emit("myRoom", user.username);
         if (socket) {
           // socket.off("connect");
           // Set up event listeners after socket is connected
@@ -56,6 +57,9 @@ export const AuthProvider = ({ children }) => {
       socket.off("connect");
       // socket.off("hello");
       socket.emit("login", token);
+      const decoded = jwtDecode(token);
+      // console.log(decoded.username);
+      socket.emit("myRoom", decoded.username);
       // Set up event listeners after socket is connected
       socket.on("connect", () => {
         console.log("Socket connected:", socket.connected);

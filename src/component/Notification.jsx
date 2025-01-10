@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./authContext/AuthContext";
 
 function Notification() {
-  const [notification, setNotification] = useState(["rahul"]);
+  const [notification, setNotification] = useState([]);
   const { user, logout, mySocket, isPopupOpen, setPopupOpen } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -16,8 +16,9 @@ function Notification() {
       },
       body: JSON.stringify({ username }),
     });
-    const friendData = await res.json();
-    console.log(friendData);
+    const data = await res.json();
+    console.log(data);
+    setNotification(data.data);
   }
 
   useEffect(() => {
@@ -25,7 +26,7 @@ function Notification() {
       logout();
       navigate("/");
     }
-    fetchNotificationHandler();
+    fetchNotificationHandler(user.username);
 
     const emitNotificationHandler = (listOfNotifications) =>{
       console.log(listOfNotifications);
@@ -40,7 +41,9 @@ function Notification() {
     }
   }, []);
 
-  const acceptHandler = () => {};
+  const acceptHandler = (friendRequesterUsername) => {
+console.log(friendRequesterUsername);
+  };
   return (
     <>
       {notification.length !== 0 ? (
@@ -54,10 +57,10 @@ function Notification() {
               className="bg-slate-300 m-5 p-1 font-bold rounded-lg flex items-center justify-between"
               key={index}
             >
-              <span>{notification}</span>
+              <span>{notification.username}</span>
               <span
                 className="text-blue-800 cursor-pointer"
-                onClick={(event) => acceptHandler(index)}
+                onClick={(event) => acceptHandler(notification.username)}
               >
                 Accept
               </span>
