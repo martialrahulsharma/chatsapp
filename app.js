@@ -12,6 +12,7 @@ import { ChatRoomModel } from "./model/getChatsSchema.js";
 import { ProfileSchema } from "./model/profileSchema.js";
 import { unreadMessageModel } from "./model/unreadMessageSchema.js";
 import { notificationSchemaModel } from "./model/notificationSchema.js";
+import { AddedFriendListModel } from "./model/addedFriendListSchema.js";
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -240,28 +241,92 @@ io.on("connection", (socket) => {
     whomeRequesterUsername,
     myUsername
   ) => {
+    console.log(244, whomeRequesterUsername, myUsername);
     try {
       let data = await notificationSchemaModel.findOne({
-        username: whomeRequesterUsername,
+        username: whomeRequesterUsername.username,
       });
-      console.log(data);
       if (data == null) {
         data = new notificationSchemaModel({
-          username: whomeRequesterUsername,
-          notificationList: [{username: myUsername}],
+          username: whomeRequesterUsername.username,
+          notificationList: [
+            { username: myUsername.username, userId: myUsername.userId },
+          ],
+        });
+        await data.save().then(() => {
+          io.to(whomeRequesterUsername.username).emit(
+            "emitNotification",
+            data.notificationList
+          );
         });
       } else {
-        const usernameExist = data.notificationList.some((entry)=> entry.username === myUsername)
-        if(!usernameExist){
-          data.notificationList.push({username: myUsername});
+        const usernameExist = data.notificationList.some(
+          (entry) => entry.username === myUsername.username
+        );
+        if (!usernameExist) {
+          data.notificationList.push({
+            username: myUsername.username,
+            userId: myUsername.userId,
+          });
         }
       }
-      data.save().then(() => {
-        io.to(whomeRequesterUsername).emit(
+      await data.save().then(() => {
+        io.to(whomeRequesterUsername.username).emit(
           "emitNotification",
           data.notificationList
         );
       });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const addFriendRequestHandler = async (dataOfFriend, userId, username) => {
+    console.log(272, dataOfFriend, userId, username);
+    try {
+      const myData = await AddedFriendListModel.findOne({ userId });
+      const friendData = await AddedFriendListModel.findOne({
+        userId: dataOfFriend.userId,
+      });
+
+      if (myData == null) {
+        const data = new AddedFriendListModel({
+          userId: userId,
+          myFriendList: [dataOfFriend.userId],
+        });
+        console.log(297, myData);
+        await data.save();
+      } else if (myData.myFriendList.includes(dataOfFriend.userId)) {
+        console.log("Friend allready exist");
+        return;
+      } else {
+        myData.myFriendList.push(dataOfFriend.userId);
+        await myData.save();
+      }
+
+      if (friendData == null) {
+        const data = new AddedFriendListModel({
+          userId: dataOfFriend.userId,
+          myFriendList: [userId],
+        });
+        await data.save();
+      } else if (friendData.myFriendList.includes(userId)) {
+        console.log("hi! Friend allready exist");
+        return;
+      } else {
+        friendData.myFriendList.push(userId);
+        await friendData.save();
+      }
+
+      const data = await notificationSchemaModel.findOne({ username });
+      const index = data.notificationList.findIndex(
+        (entry) => entry.username === dataOfFriend.username
+      );
+      if (index !== -1) {
+        data.notificationList.splice(index, 1);
+      }
+      await data.save();
+
     } catch (error) {
       console.log(error);
     }
@@ -275,6 +340,7 @@ io.on("connection", (socket) => {
   socket.off("send_message", sendMessageSocketHandler);
   socket.off("myRoom", myRoomSocketHandler);
   socket.off("notificationSocketHandler", notificationSocketHandler);
+  socket.off("addFriendRequest", addFriendRequestHandler);
   socket.on("login", loginHandler);
   socket.on("logout", logoutHandler);
   socket.on("leaveRoom", leaveRoomSocketHandler);
@@ -283,6 +349,7 @@ io.on("connection", (socket) => {
   socket.on("friendMessageIsRead", friendMessageIsReadHandler);
   socket.on("myRoom", myRoomSocketHandler);
   socket.on("notificationSocketHandler", notificationSocketHandler);
+  socket.on("addFriendRequest", addFriendRequestHandler);
 
   function generateRoomId(user1, user2) {
     // Create a unique room ID based on the user names
@@ -302,6 +369,7 @@ io.on("connection", (socket) => {
     socket.off("send_message", sendMessageSocketHandler);
     socket.off("myRoom", myRoomSocketHandler);
     socket.off("notificationSocketHandler", notificationSocketHandler);
+    socket.off("addFriendRequest", addFriendRequestHandler);
   });
 });
 

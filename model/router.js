@@ -53,7 +53,7 @@ export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
     const existingUser = await SignupModel.findOne({ username });
-    
+
     if (existingUser == null) {
       return res.status(401).json({ error: "Authentication failed" });
     }
@@ -176,67 +176,85 @@ router.get("/getProfileData", verifyToken, async (req, res) => {
 
 router.post("/findFriend", verifyToken, async (req, res) => {
   try {
-    const { username } = req.body;
+    const { username, user } = req.body;
     const friendList = await SignupModel.find({
       $or: [
         { username: { $regex: username, $options: "i" } }, // Case-insensitive search
         // Add more fields if necessary
       ],
     });
-
+    
     if (!friendList) return res.status(401).json({ error: "User not found" });
-    const filteredFriend = friendList.map((user, index) => user.username);
-    if (filteredFriend.length !== 0) res.status(200).json(filteredFriend);
-    else res.status(404).json({ error: "Username not found" });
+    const filteredFriend = friendList.map((user, index) => ({username: user.username, userId: user._id}));  
+    if (filteredFriend.length !== 0) {
+
+      await notificationSchemaModel.findOne({
+        username: user.username,
+        notificationList: {
+          $elemMatch: {
+            username: { $in: filteredFriend.map((user) => user.username)},
+          },
+        },
+      })
+        .then((usernmeOfNotificationList) => {
+          // console.log("Matching Notifications:", usernmeOfNotificationList);
+          res.status(200).json({filteredFriend, usernmeOfNotificationList});
+        })
+        .catch((err) => {
+          console.error("Error fetching notifications:", err);
+        });
+
+    } else res.status(404).json({ error: "Username not found" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
 
-router.post("/addFriendInList", verifyToken, async (req, res) => {
-  const { usernameOfFriend } = req.body;
-  try {
-    const friendListData = await SignupModel.findOne({
-      username: usernameOfFriend,
-    });
-    if (!friendListData) {
-      return res.status(404).json({ error: "username not found" });
-    }
-    const addedFriendData = await AddedFriendListModel.findOne({
-      userId: req.userId,
-    });
-    if (addedFriendData == null) {
-      const data = new AddedFriendListModel({
-        userId: req.userId,
-      });
-      data.myFriendList.push(friendListData._id);
-      await data.save();
-      return res.status(200).json({ message: "Friend added successfully" });
-    }
-    if (addedFriendData.myFriendList.includes(friendListData._id)) {
-      return res.status(404).json({ error: "Friend allready exist" });
-    }
-    addedFriendData.myFriendList.push(friendListData._id);
-    await addedFriendData.save();
-    return res.status(400).json({ message: "Friend added successfully" });
-  } catch (error) {
-    res.send().json({ error: "Something went wrong, please visit developer" });
-  }
-});
-
-
+// router.post("/addFriendRequest", verifyToken, async (req, res) => {
+//   const { usernameOfFriend } = req.body;
+//   try {
+//     const friendListData = await notificationSchemaModel.findOne({
+//       username: usernameOfFriend,
+//     });
+//     if (!friendListData) {
+//       return res.status(404).json({ error: "username not found" });
+//     }
+//     const addedFriendData = await AddedFriendListModel.findOne({
+//       userId: req.userId,
+//     });
+//     if (addedFriendData == null) {
+//       const data = new AddedFriendListModel({
+//         userId: req.userId,
+//       });
+//       data.myFriendList.push(friendListData._id);
+//       await data.save();
+//       return res.status(200).json({ message: "Friend added successfully" });
+//     }
+//     if (addedFriendData.myFriendList.includes(friendListData._id)) {
+//       return res.status(404).json({ error: "Friend allready exist" });
+//     }
+//     addedFriendData.myFriendList.push(friendListData._id);
+//     await addedFriendData.save();
+//     return res.status(400).json({ message: "Friend added successfully" });
+//   } catch (error) {
+//     res.send().json({ error: "Something went wrong, please visit developer" });
+//   }
+// });
 
 router.post("/getNotification", verifyToken, async (req, res) => {
   try {
-    const {username} = req.body;
+    const { username } = req.body;
     const data = await notificationSchemaModel.findOne({
       username: username,
     });
     if (data == null) {
       return res.status(400).json({ error: "No any notifications" });
     }
-    return res.json({data: data.notificationList})
+    if(data.notificationList.length === 0){
+      return res.status(400).json({ error: "No any notifications" });
+    }
+    return res.json({ data: data.notificationList });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Something went wrong" });
@@ -252,6 +270,9 @@ router.get("/myfriends", verifyToken, async (req, res) => {
     // console.log(profileData);
     // const profileData = await
     if (!data) {
+      return res.status(400).json({ error: "No friends found" });
+    }
+    if(data.myFriendList.length === 0){
       return res.status(400).json({ error: "No friends found" });
     }
 

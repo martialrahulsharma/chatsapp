@@ -6,8 +6,8 @@ const notificationSchema = new Schema({
     username: {type: String},
     notificationList: [{
         username: {type: String},
-        // name: {type: String},
-        date: {type: Date, default: Date.now},
+        userId: {type: String},
+        timestamp: {type: Date, default: Date.now},
         _id: false,
     }]
 });
