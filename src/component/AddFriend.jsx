@@ -5,7 +5,9 @@ import { AuthContext } from "./authContext/AuthContext";
 function AddFriend() {
   const [username, setUsername] = useState("");
   const [friends, setFriend] = useState([]);
-  const [addFriend, setAddFriend] = useState("");
+  const [usernameOfNotificationList, setUsernameOfNotificationList] = useState(
+    []
+  );
   const [error, setError] = useState("");
   const [message, setMessage] = useState({
     error: "",
@@ -16,6 +18,7 @@ function AddFriend() {
 
   const findFriends = async (event) => {
     event.preventDefault();
+
     setError("");
     message.error = "";
     message.success = "";
@@ -25,41 +28,35 @@ function AddFriend() {
         Authorization: `${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username }),
+      body: JSON.stringify({ username, user }),
     });
     const friendData = await res.json();
     console.log(friendData);
-    if (friendData.error) {
-      setError(friendData.error);
-    } else {
-      setFriend(friendData);
+    try {
+      setUsernameOfNotificationList(
+        friendData.usernmeOfNotificationList.notificationList
+      );
+      setFriend(friendData.filteredFriend);
+    } catch (error) {
+      if (friendData.error) {
+        setError(friendData.error);
+      } else {
+        setFriend(friendData.filteredFriend);
+      }
     }
   };
 
-  const addFriendHandler = async (event, usernameOfFriend) => {
+  const requestFriendHandler = async (event, dataOfFriend) => {
     event.preventDefault();
-    if(mySocket) mySocket.emit("notificationSocketHandler", usernameOfFriend, user.username)
-    // const res = await fetch("http://localhost:3000/addFriendInList", {
-    //   method: "POST",
-    //   headers: {
-    //     Authorization: `${localStorage.getItem("token")}`,
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({ usernameOfFriend }),
-    // });
+    if (mySocket)
+      mySocket.emit("notificationSocketHandler", dataOfFriend, user);
+  };
 
-    // const addFriendResponse = await res.json();
-    // if (addFriendResponse.error) {
-    //   setMessage((prev)=>({
-    //     ...prev,
-    //     error: message.error = addFriendResponse.error,
-    //   }));
-    // }else{
-    //   setMessage((prev)=>({
-    //     ...prev,
-    //     success: message.success = addFriendResponse.message,
-    //   }));
-    // }
+  const acceptFriendHandler = async (event, dataOfFriend) => {
+    event.preventDefault();
+    if (mySocket) {
+      mySocket.emit("addFriendRequest", dataOfFriend, user.userId, user.username);
+    }
   };
 
   useEffect(() => {
@@ -87,9 +84,11 @@ function AddFriend() {
             Find
           </button>
         </form>
-        {
-          message.error ? <p className="text-red-700">{message.error}</p> : <p className="text-green-700">{message.success}</p>
-        }
+        {message.error ? (
+          <p className="text-red-700">{message.error}</p>
+        ) : (
+          <p className="text-green-700">{message.success}</p>
+        )}
       </div>
       <div className="grid gap-y-3 mt-3">
         {error ? (
@@ -102,13 +101,26 @@ function AddFriend() {
               key={index}
               className="flex h-7 mr-3 ml-3 rounded-md font-medium bg-slate-300 pl-4 pr-4 justify-between items-center"
             >
-              <label>{item}</label>
-              <button
-                onClick={() => addFriendHandler(event, item)}
-                className="rounded-md h-6 px-1 cursor-pointer text-blue-800"
-              >
-                Request
-              </button>
+              <label>{item.username}</label>
+              {usernameOfNotificationList.some(
+                (array) => array.username == item.username
+              ) ? (
+                <button
+                  onClick={(event) => acceptFriendHandler(event, item)}
+                  className="rounded-md h-6 px-1 cursor-pointer text-red-700"
+                >
+                  Accept
+                </button>
+              ) : (
+                <button
+                  onClick={(event) =>
+                    requestFriendHandler(event, item)
+                  }
+                  className="rounded-md h-6 px-1 cursor-pointer text-blue-800"
+                >
+                  Request
+                </button>
+              )}
             </div>
           ))
         )}

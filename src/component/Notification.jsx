@@ -4,10 +4,12 @@ import { AuthContext } from "./authContext/AuthContext";
 
 function Notification() {
   const [notification, setNotification] = useState([]);
-  const { user, logout, mySocket, isPopupOpen, setPopupOpen } = useContext(AuthContext);
+  const [notificationError, setNotificationError] = useState("");
+  const { user, logout, mySocket } =
+    useContext(AuthContext);
   const navigate = useNavigate();
 
-  const fetchNotificationHandler = async (username) =>{
+  const fetchNotificationHandler = async (username) => {
     const res = await fetch("http://localhost:3000/getNotification", {
       method: "POST",
       headers: {
@@ -18,8 +20,10 @@ function Notification() {
     });
     const data = await res.json();
     console.log(data);
-    setNotification(data.data);
-  }
+    if (data.error) setNotificationError(data.error); 
+    if(data.data) setNotification(data.data);
+    console.log(data.data);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -28,21 +32,24 @@ function Notification() {
     }
     fetchNotificationHandler(user.username);
 
-    const emitNotificationHandler = (listOfNotifications) =>{
-      console.log(listOfNotifications);
-    }
+    const emitNotificationHandler = (listOfNotifications) => {
+      setNotification(listOfNotifications);
+    };
     console.log(user);
-    if(mySocket){
+    if (mySocket) {
       mySocket.off("emitNotification", emitNotificationHandler);
       mySocket.on("emitNotification", emitNotificationHandler);
     }
-    return () =>{
+    return () => {
       mySocket.off("emitNotification", emitNotificationHandler);
-    }
+    };
   }, []);
 
-  const acceptHandler = (friendRequesterUsername) => {
-console.log(friendRequesterUsername);
+  const acceptFriendHandler = async (event, dataOfFriend) => {
+    event.preventDefault();
+    if (mySocket) {
+      mySocket.emit("addFriendRequest", dataOfFriend, user.userId, user.username);
+    }
   };
   return (
     <>
@@ -60,7 +67,7 @@ console.log(friendRequesterUsername);
               <span>{notification.username}</span>
               <span
                 className="text-blue-800 cursor-pointer"
-                onClick={(event) => acceptHandler(notification.username)}
+                onClick={(event) => acceptFriendHandler(event, notification)}
               >
                 Accept
               </span>
@@ -69,7 +76,7 @@ console.log(friendRequesterUsername);
         </>
       ) : (
         <div>
-          <h2>No any notification</h2>
+          <h2>{notificationError}</h2>
         </div>
       )}
     </>
