@@ -183,64 +183,49 @@ router.post("/findFriend", verifyToken, async (req, res) => {
         // Add more fields if necessary
       ],
     });
-    
-    if (!friendList) return res.status(401).json({ error: "User not found" });
-    const filteredFriend = friendList.map((user, index) => ({username: user.username, userId: user._id}));  
-    if (filteredFriend.length !== 0) {
 
-      await notificationSchemaModel.findOne({
+    if (!friendList) return res.status(401).json({ error: "User not found" });
+    const filteredFriend = friendList.map((user, index) => ({
+      username: user.username,
+      userId: user._id,
+    }));
+    if (filteredFriend.length !== 0) {
+      const userDocs = await AddedFriendListModel.findOne({
+        userId: user.userId,
+      })
+        .select("myFriendList")
+        .exec();
+      let myFriendList = "";
+      if (userDocs == null) {
+        myFriendList = [];
+      } else {
+        myFriendList = userDocs.myFriendList;
+      }
+
+      let requestedFriendList = await notificationSchemaModel.findOne({
+        username: user.username,
+      });
+      if (requestedFriendList !== null) {
+        requestedFriendList = requestedFriendList.requestedFriendList;
+      }
+
+      let usernmeOfNotificationList = await notificationSchemaModel.findOne({
         username: user.username,
         notificationList: {
           $elemMatch: {
-            username: { $in: filteredFriend.map((user) => user.username)},
+            username: { $in: filteredFriend.map((user) => user.username) },
           },
         },
-      })
-        .then((usernmeOfNotificationList) => {
-          // console.log("Matching Notifications:", usernmeOfNotificationList);
-          res.status(200).json({filteredFriend, usernmeOfNotificationList});
-        })
-        .catch((err) => {
-          console.error("Error fetching notifications:", err);
-        });
-
+      });
+      res
+        .status(200)
+        .json({ filteredFriend, usernmeOfNotificationList, myFriendList, requestedFriendList });
     } else res.status(404).json({ error: "Username not found" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
-
-// router.post("/addFriendRequest", verifyToken, async (req, res) => {
-//   const { usernameOfFriend } = req.body;
-//   try {
-//     const friendListData = await notificationSchemaModel.findOne({
-//       username: usernameOfFriend,
-//     });
-//     if (!friendListData) {
-//       return res.status(404).json({ error: "username not found" });
-//     }
-//     const addedFriendData = await AddedFriendListModel.findOne({
-//       userId: req.userId,
-//     });
-//     if (addedFriendData == null) {
-//       const data = new AddedFriendListModel({
-//         userId: req.userId,
-//       });
-//       data.myFriendList.push(friendListData._id);
-//       await data.save();
-//       return res.status(200).json({ message: "Friend added successfully" });
-//     }
-//     if (addedFriendData.myFriendList.includes(friendListData._id)) {
-//       return res.status(404).json({ error: "Friend allready exist" });
-//     }
-//     addedFriendData.myFriendList.push(friendListData._id);
-//     await addedFriendData.save();
-//     return res.status(400).json({ message: "Friend added successfully" });
-//   } catch (error) {
-//     res.send().json({ error: "Something went wrong, please visit developer" });
-//   }
-// });
 
 router.post("/getNotification", verifyToken, async (req, res) => {
   try {
@@ -251,7 +236,7 @@ router.post("/getNotification", verifyToken, async (req, res) => {
     if (data == null) {
       return res.status(400).json({ error: "No any notifications" });
     }
-    if(data.notificationList.length === 0){
+    if (data.notificationList.length === 0) {
       return res.status(400).json({ error: "No any notifications" });
     }
     return res.json({ data: data.notificationList });
@@ -272,7 +257,7 @@ router.get("/myfriends", verifyToken, async (req, res) => {
     if (!data) {
       return res.status(400).json({ error: "No friends found" });
     }
-    if(data.myFriendList.length === 0){
+    if (data.myFriendList.length === 0) {
       return res.status(400).json({ error: "No friends found" });
     }
 

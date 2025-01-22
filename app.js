@@ -239,13 +239,43 @@ io.on("connection", (socket) => {
 
   const notificationSocketHandler = async (
     whomeRequesterUsername,
-    myUsername
+    myUsername,
+    callback
   ) => {
     console.log(244, whomeRequesterUsername, myUsername);
     try {
       let data = await notificationSchemaModel.findOne({
         username: whomeRequesterUsername.username,
       });
+
+      const myData = await notificationSchemaModel.findOne({username: myUsername.username});
+      if (myData == null) {
+        const data = new notificationSchemaModel({
+          username: myUsername.username,
+          notificationList: [],
+          requestedFriendList: [{
+            username: whomeRequesterUsername.username,
+            userId: whomeRequesterUsername.userId
+          }],
+        });
+        await data.save().then(() => {
+          if(callback){
+            callback(data.requestedFriendList);
+            console.log(data.requestedFriendList);
+          }
+        });
+      } else if(myData.requestedFriendList.some(entry => entry.username === whomeRequesterUsername.username)){
+        callback(["Friend request allready sent"]);
+        return;
+      } else {
+        myData.requestedFriendList.push({username: whomeRequesterUsername.username,
+          userId: whomeRequesterUsername.userId})
+        await myData.save().then(() => {
+          if(callback){
+            callback(myData.requestedFriendList);
+          }
+        })
+      }
       if (data == null) {
         data = new notificationSchemaModel({
           username: whomeRequesterUsername.username,
@@ -281,21 +311,21 @@ io.on("connection", (socket) => {
     }
   };
 
-  const addFriendRequestHandler = async (dataOfFriend, userId, username) => {
-    console.log(272, dataOfFriend, userId, username);
+  const addFriendRequestHandler = async (dataOfFriend, userId, username, callback) => {
+    console.log(315, dataOfFriend, userId, username);
     try {
-      const myData = await AddedFriendListModel.findOne({ userId });
+      let myData = await AddedFriendListModel.findOne({ userId });
       const friendData = await AddedFriendListModel.findOne({
         userId: dataOfFriend.userId,
       });
 
       if (myData == null) {
-        const data = new AddedFriendListModel({
+        myData = new AddedFriendListModel({
           userId: userId,
           myFriendList: [dataOfFriend.userId],
         });
-        console.log(297, myData);
-        await data.save();
+        console.log(327, myData);
+        await myData.save();
       } else if (myData.myFriendList.includes(dataOfFriend.userId)) {
         console.log("Friend allready exist");
         return;
@@ -318,6 +348,14 @@ io.on("connection", (socket) => {
         await friendData.save();
       }
 
+      const friendNotificationData = await notificationSchemaModel.findOne({ username: dataOfFriend.username });
+      if(friendNotificationData !== null){
+        const index = friendNotificationData.requestedFriendList.findIndex(entry => entry.username === username);
+        if(index !== -1){
+          friendNotificationData.requestedFriendList.splice(index, 1);
+          await friendNotificationData.save();
+        }
+      }
       const data = await notificationSchemaModel.findOne({ username });
       const index = data.notificationList.findIndex(
         (entry) => entry.username === dataOfFriend.username
@@ -326,7 +364,9 @@ io.on("connection", (socket) => {
         data.notificationList.splice(index, 1);
       }
       await data.save();
-
+      if(callback){
+        callback({friendList: myData.myFriendList, notificationList: data.notificationList});
+      }
     } catch (error) {
       console.log(error);
     }

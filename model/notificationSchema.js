@@ -9,7 +9,14 @@ const notificationSchema = new Schema({
         userId: {type: String},
         timestamp: {type: Date, default: Date.now},
         _id: false,
-    }]
+    }],
+    requestedFriendList: [{
+        username: {type: String},
+        userId: {type: String},
+        timestamp: {type: Date, default: Date.now},
+        _id: false,
+    }],
+
 });
 
 export const notificationSchemaModel = model("Notification", notificationSchema);
