@@ -5,6 +5,8 @@ import { AuthContext } from "./authContext/AuthContext";
 function AddFriend() {
   const [username, setUsername] = useState("");
   const [friends, setFriend] = useState([]);
+  const [myFriend, setMyFriend] = useState([]);
+  const [requestList, setRequestList] = useState([]);
   const [usernameOfNotificationList, setUsernameOfNotificationList] = useState(
     []
   );
@@ -33,15 +35,20 @@ function AddFriend() {
     const friendData = await res.json();
     console.log(friendData);
     try {
-      setUsernameOfNotificationList(
-        friendData.usernmeOfNotificationList.notificationList
-      );
+        setUsernameOfNotificationList(
+          friendData.usernmeOfNotificationList.notificationList
+        );
       setFriend(friendData.filteredFriend);
+      setRequestList(friendData.requestedFriendList);
+      setMyFriend([...friendData.myFriendList, user.userId]);
+      console.log([...friendData.myFriendList, user.userId]);
     } catch (error) {
       if (friendData.error) {
         setError(friendData.error);
       } else {
         setFriend(friendData.filteredFriend);
+        setMyFriend([...friendData.myFriendList, user.userId]);
+        setRequestList(friendData.requestedFriendList);
       }
     }
   };
@@ -49,13 +56,31 @@ function AddFriend() {
   const requestFriendHandler = async (event, dataOfFriend) => {
     event.preventDefault();
     if (mySocket)
-      mySocket.emit("notificationSocketHandler", dataOfFriend, user);
+      mySocket.emit(
+        "notificationSocketHandler",
+        dataOfFriend,
+        user,
+        (response) => {
+          console.log(response);
+          setRequestList(response);
+        }
+      );
   };
 
   const acceptFriendHandler = async (event, dataOfFriend) => {
     event.preventDefault();
     if (mySocket) {
-      mySocket.emit("addFriendRequest", dataOfFriend, user.userId, user.username);
+      mySocket.emit(
+        "addFriendRequest",
+        dataOfFriend,
+        user.userId,
+        user.username,
+        (response) => {
+          console.log(response);
+          setMyFriend([...response.friendList, user.userId]);
+          setUsernameOfNotificationList(response.notificationList);
+        }
+      );
     }
   };
 
@@ -63,7 +88,7 @@ function AddFriend() {
     if (!user) {
       navigate("/");
     }
-  }, [friends]);
+  }, [friends, requestList, myFriend]);
 
   return (
     <div>
@@ -98,12 +123,12 @@ function AddFriend() {
         ) : (
           friends.map((item, index) => (
             <div
-              key={index}
+              key={item.userId}
               className="flex h-7 mr-3 ml-3 rounded-md font-medium bg-slate-300 pl-4 pr-4 justify-between items-center"
-            >
+            >{console.log(usernameOfNotificationList)}
               <label>{item.username}</label>
               {usernameOfNotificationList.some(
-                (array) => array.username == item.username
+                (array) => array.username === item.username
               ) ? (
                 <button
                   onClick={(event) => acceptFriendHandler(event, item)}
@@ -111,15 +136,21 @@ function AddFriend() {
                 >
                   Accept
                 </button>
+              ) : !myFriend.some((dost) => dost == item.userId) ? (
+                requestList && requestList.some((entry) => item.username == entry.username) ? (
+                  <label className="rounded-md h-6 px-1 text-blue-800 opacity-75">
+                    Requested
+                  </label>
+                ) : (
+                  <button
+                    onClick={(event) => requestFriendHandler(event, item)}
+                    className="rounded-md h-6 px-1 cursor-pointer text-blue-800"
+                  >
+                    Send Request
+                  </button>
+                )
               ) : (
-                <button
-                  onClick={(event) =>
-                    requestFriendHandler(event, item)
-                  }
-                  className="rounded-md h-6 px-1 cursor-pointer text-blue-800"
-                >
-                  Request
-                </button>
+                ""
               )}
             </div>
           ))

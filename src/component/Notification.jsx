@@ -48,7 +48,10 @@ function Notification() {
   const acceptFriendHandler = async (event, dataOfFriend) => {
     event.preventDefault();
     if (mySocket) {
-      mySocket.emit("addFriendRequest", dataOfFriend, user.userId, user.username);
+      mySocket.emit("addFriendRequest", dataOfFriend, user.userId, user.username, (response)=>{
+        setNotification(response.notificationList);
+        if(response.notificationList.length === 0) setNotificationError("No any notifications");
+      });
     }
   };
   return (
