@@ -372,6 +372,36 @@ io.on("connection", (socket) => {
     }
   };
 
+  const declineFriendRequestHandler = async (dataOfFriend, userId, username, callback) => {
+    console.log(376, dataOfFriend, userId, username);
+    try {
+      // access my notification data
+      const myNotificationData = await notificationSchemaModel.findOne({username})
+      const index = myNotificationData.notificationList.findIndex(
+        (entry) => entry.username === dataOfFriend.username
+      );
+      if (index !== -1) {
+        myNotificationData.notificationList.splice(index, 1);
+      }
+      await myNotificationData.save();
+  
+      // access friend notification data
+      const friendNotificationData = await notificationSchemaModel.findOne({ username: dataOfFriend.username });
+        if(friendNotificationData !== null){
+          const index = friendNotificationData.requestedFriendList.findIndex(entry => entry.username === username);
+          if(index !== -1){
+            friendNotificationData.requestedFriendList.splice(index, 1);
+            await friendNotificationData.save();
+          }
+        }
+        if(callback){
+          callback({notificationList: myNotificationData.notificationList});
+        }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   socket.off("login", loginHandler);
   socket.off("logout", logoutHandler);
   socket.off("leaveRoom", leaveRoomSocketHandler);
@@ -381,6 +411,7 @@ io.on("connection", (socket) => {
   socket.off("myRoom", myRoomSocketHandler);
   socket.off("notificationSocketHandler", notificationSocketHandler);
   socket.off("addFriendRequest", addFriendRequestHandler);
+  socket.off("declineFriendRequest", declineFriendRequestHandler);
   socket.on("login", loginHandler);
   socket.on("logout", logoutHandler);
   socket.on("leaveRoom", leaveRoomSocketHandler);
@@ -390,6 +421,7 @@ io.on("connection", (socket) => {
   socket.on("myRoom", myRoomSocketHandler);
   socket.on("notificationSocketHandler", notificationSocketHandler);
   socket.on("addFriendRequest", addFriendRequestHandler);
+  socket.on("declineFriendRequest", declineFriendRequestHandler);
 
   function generateRoomId(user1, user2) {
     // Create a unique room ID based on the user names
