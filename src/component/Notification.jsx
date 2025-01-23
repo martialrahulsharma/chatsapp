@@ -54,6 +54,22 @@ function Notification() {
       });
     }
   };
+
+  const declineFriendRequestHandler = async (event, dataOfFriend) => {
+    event.preventDefault();
+    if (mySocket) {
+      mySocket.emit(
+        "declineFriendRequest",
+        dataOfFriend,
+        user.userId,
+        user.username,
+        (response) => {
+          setNotification(response.notificationList);
+          if(response.notificationList.length === 0) setNotificationError("No any notifications");
+        }
+      );
+    }
+  }
   return (
     <>
       {notification.length !== 0 ? (
@@ -68,12 +84,21 @@ function Notification() {
               key={index}
             >
               <span>{notification.username}</span>
+              <div className="flex gap-x-2">
+
               <span
-                className="text-blue-800 cursor-pointer"
+                className="rounded-md h-6 px-1 cursor-pointer bg-red-600 hover:bg-red-800 text-white"
+                onClick={(event) => declineFriendRequestHandler(event, notification)}
+              >
+                Decline
+              </span>
+              <span
+                className="rounded-md h-6 px-1 cursor-pointer bg-blue-600 hover:bg-blue-800 text-white"
                 onClick={(event) => acceptFriendHandler(event, notification)}
               >
                 Accept
               </span>
+              </div>
             </div>
           ))}
         </>

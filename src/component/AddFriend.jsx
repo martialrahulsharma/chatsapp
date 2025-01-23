@@ -84,6 +84,22 @@ function AddFriend() {
     }
   };
 
+  const declineFriendRequestHandler = async (event, dataOfFriend) => {
+    event.preventDefault();
+    if (mySocket) {
+      mySocket.emit(
+        "declineFriendRequest",
+        dataOfFriend,
+        user.userId,
+        user.username,
+        (response) => {
+          console.log(response);
+          setUsernameOfNotificationList(response.notificationList);
+        }
+      );
+    }
+  }
+
   useEffect(() => {
     if (!user) {
       navigate("/");
@@ -124,21 +140,29 @@ function AddFriend() {
           friends.map((item, index) => (
             <div
               key={item.userId}
-              className="flex h-7 mr-3 ml-3 rounded-md font-medium bg-slate-300 pl-4 pr-4 justify-between items-center"
+              className="flex h-7 mr-3 ml-3 rounded-md font-medium bg-slate-300 pl-4 pr-4 items-center justify-between"
             >{console.log(usernameOfNotificationList)}
               <label>{item.username}</label>
               {usernameOfNotificationList.some(
                 (array) => array.username === item.username
               ) ? (
+                <div className="flex gap-x-2">
+                <button
+                  onClick={(event) => declineFriendRequestHandler(event, item)}
+                  className="rounded-md h-6 px-1 cursor-pointer bg-red-600 hover:bg-red-800 text-white"
+                  >
+                  Decline
+                </button>
                 <button
                   onClick={(event) => acceptFriendHandler(event, item)}
-                  className="rounded-md h-6 px-1 cursor-pointer text-red-700"
-                >
+                  className="rounded-md h-6 px-1 cursor-pointer bg-blue-600 hover:bg-blue-800 text-white"
+                  >
                   Accept
                 </button>
+                  </div>
               ) : !myFriend.some((dost) => dost == item.userId) ? (
                 requestList && requestList.some((entry) => item.username == entry.username) ? (
-                  <label className="rounded-md h-6 px-1 text-blue-800 opacity-75">
+                  <label className="rounded-md h-6 px-1 text-blue-800 opacity-50 cursor-not-allowed">
                     Requested
                   </label>
                 ) : (
