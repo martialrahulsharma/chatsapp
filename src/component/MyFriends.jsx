@@ -7,13 +7,13 @@ function MyFriends() {
   const [friendList, setFriendList] = useState([]);
   const [error, setError] = useState(null);
   const [showChatArea, setShowChatArea] = useState(false);
-  const [namePlate, setNamePlate] = useState("My Friend");
+  const [namePlate, setNamePlate] = useState("");
   const [friendUsername, setFriendUsername] = useState("");
   const { user, logout, mySocket, isPopupOpen, setPopupOpen } =
     useContext(AuthContext);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState({ chatIsOpen: false, refresh: true });
-  const [MesageBadge, setMessageBadge] = useState([]);
+  const [friendAvatar, setFriendAvatar] = useState(null);
   const [unreadMessages, setUnreadMessage] = useState([]);
   const [isUserJoinRoom, setIsUserJoinRoom] = useState(true);
 
@@ -33,7 +33,9 @@ function MyFriends() {
       const data = await res.json();
       console.log(data);
       if (data.error) setError(data.error);
-      else setFriendList(data);
+      else {
+        setFriendList(data);
+      }
     } catch (error) {
       alert(error);
     }
@@ -67,7 +69,7 @@ function MyFriends() {
         console.error("User or roomId is undefined.");
       }
     }
-    if (!offOn) setNamePlate("My Friend");
+    if (!offOn) setNamePlate("");
     setShowChatArea(offOn);
     isOpen.chatIsOpen = offOn;
     if (!offOn) isOpen.refresh = false;
@@ -101,29 +103,29 @@ function MyFriends() {
       logout();
       navigate("/");
     }
-    const isLoggedInUserDataHandler = (isLoggedInUserData) =>{
+    const isLoggedInUserDataHandler = (isLoggedInUserData) => {
       console.log({ isLoggedInUserData });
-        if (isLoggedInUserData.isLoggedIn) {
-          if (isOpen.chatIsOpen) {
-            setIsLoggedIn(true);
-            updateFriendList(isLoggedInUserData);
-          } else updateFriendList(isLoggedInUserData);
-        } else {
-          if (isOpen.chatIsOpen) {
-            setIsLoggedIn(false);
-            updateFriendList(isLoggedInUserData);
-          } else updateFriendList(isLoggedInUserData);
-        }
-    }
+      if (isLoggedInUserData.isLoggedIn) {
+        if (isOpen.chatIsOpen) {
+          setIsLoggedIn(true);
+          updateFriendList(isLoggedInUserData);
+        } else updateFriendList(isLoggedInUserData);
+      } else {
+        if (isOpen.chatIsOpen) {
+          setIsLoggedIn(false);
+          updateFriendList(isLoggedInUserData);
+        } else updateFriendList(isLoggedInUserData);
+      }
+    };
 
     const myFriendJoinRoom = (arrayOfUnreadMessages) => {
       console.log(arrayOfUnreadMessages);
-    }
+    };
 
     const unreadMessageSocketHandler = (unreadSenderMessage) => {
       console.log(unreadSenderMessage);
       setUnreadMessage(unreadSenderMessage);
-    }
+    };
 
     if (mySocket) {
       setTimeout(() => {
@@ -143,8 +145,6 @@ function MyFriends() {
       mySocket.on("myFriendJoinRoom", myFriendJoinRoom);
     }
 
-    // mySocket.off("myRomm");
-    
     return () => {
       if (mySocket) {
         mySocket.off("isLoggedIn", isLoggedInUserDataHandler);
@@ -155,19 +155,28 @@ function MyFriends() {
   }, [mySocket]);
 
   return (
-    <div>
-      <div className="grid place-content-center">
-        <h2 className="m-auto text-xl font-bold">{namePlate}</h2>
+    <div className="text-slate-300">
+      <div className="grid place-content-center rounded-lg bg-gradient-to-r from-[#344563] to-[#5A8AA6]">
+        {namePlate ? (
+          <h2
+            className="m-auto text-xl font-bold
+}"
+          >
+            {namePlate}
+          </h2>
+        ) : (
+          ""
+        )}
       </div>
       {isPopupOpen ? (
-        <div className="grid gap-y-3 mt-7">
+        <div className="grid gap-y-3">
           {error ? (
             <p className="text-red-700">{error}</p>
           ) : (
             friendList.map((myFriendsData, index) => (
               <div
                 key={index}
-                className="flex h-7 mr-3 ml-3 rounded-md font-medium bg-slate-300 pl-4 pr-4 justify-between items-center cursor-pointer"
+                className="flex rounded-l-full rounded-tr-full font-medium bg-gradient-to-r from-[#344563] to-[#5A8AA6] pr-4 justify-between items-center cursor-pointer"
                 onClick={(event) => {
                   setPopupOpen(false);
                   openChatRoomHandler(
@@ -176,8 +185,18 @@ function MyFriends() {
                     myFriendsData.username
                   );
                 }}
-              >
+              >  
+                <div className="flex flex-row items-center gap-x-2">
+                {myFriendsData.img ? <img src={`http://localhost:3000${myFriendsData.img}`} className="w-8 h-8 rounded-full"/> : <img
+                  src={`https://ui-avatars.com/api/?name=${myFriendsData.name
+                    .split(" ")
+                    .join("+")}`}
+                  alt="avatar"
+                  className="rounded-full w-8 h-8"
+                />}
                 <label className="cursor-pointer">{myFriendsData.name}</label>
+
+                </div>
                 <div className="flex items-center space-x-2">
                   {myFriendsData.isLoggedIn ? (
                     <>

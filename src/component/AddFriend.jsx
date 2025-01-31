@@ -108,9 +108,6 @@ function AddFriend() {
 
   return (
     <div>
-      <div className="grid place-content-center">
-        <h2 className="m-auto text-xl font-bold">Add Friend</h2>
-      </div>
       <div className="mt-5 mb-0">
         <form className="flex justify-around" onSubmit={findFriends}>
           <input
@@ -140,7 +137,7 @@ function AddFriend() {
           friends.map((item, index) => (
             <div
               key={item.userId}
-              className="flex h-7 mr-3 ml-3 rounded-md font-medium bg-slate-300 pl-4 pr-4 items-center justify-between"
+              className="flex h-7 mr-3 ml-3 rounded-md font-medium text-slate-300 bg-gradient-to-r from-[#344563] to-[#5A8AA6] pl-4 pr-4 items-center justify-between"
             >{console.log(usernameOfNotificationList)}
               <label>{item.username}</label>
               {usernameOfNotificationList.some(
@@ -149,13 +146,13 @@ function AddFriend() {
                 <div className="flex gap-x-2">
                 <button
                   onClick={(event) => declineFriendRequestHandler(event, item)}
-                  className="rounded-md h-6 px-1 cursor-pointer bg-red-600 hover:bg-red-800 text-white"
+                  className="rounded-md h-6 px-1 cursor-pointer bg-red-800 hover:bg-red-600 text-slate-300"
                   >
                   Decline
                 </button>
                 <button
                   onClick={(event) => acceptFriendHandler(event, item)}
-                  className="rounded-md h-6 px-1 cursor-pointer bg-blue-600 hover:bg-blue-800 text-white"
+                  className="rounded-md h-6 px-1 cursor-pointer bg-blue-800 hover:bg-blue-600 text-text-slate-300"
                   >
                   Accept
                 </button>
@@ -168,7 +165,7 @@ function AddFriend() {
                 ) : (
                   <button
                     onClick={(event) => requestFriendHandler(event, item)}
-                    className="rounded-md h-6 px-1 cursor-pointer text-blue-800"
+                    className="rounded-md h-6 px-1 cursor-pointer bg-blue-800"
                   >
                     Send Request
                   </button>

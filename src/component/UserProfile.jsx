@@ -91,9 +91,6 @@ function UserProfile() {
 
   return (
     <div>
-      <div className="grid place-content-center">
-        <h2 className="m-auto text-xl font-bold">Your Profile</h2>
-      </div>
       <form
         onSubmit={submitHandler}
         className="flex flex-col mt-5 items-center gap-y-4"

@@ -1,18 +1,15 @@
 import { useState, useContext, useEffect } from "react";
-// import io from "socket.io-client";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./authContext/AuthContext";
 
 function Login() {
-  
   const [username, setUsername] = useState("rahul");
   const [password, setPassword] = useState("123");
   const [error, setError] = useState("");
   const [showMessage, setShowMessage] = useState(true);
-  const [loginMessage, setLoginMessage] = useState("");
   const navigate = useNavigate();
-  const { user, login, mySocket } = useContext(AuthContext);
-  
+  const { user, login } = useContext(AuthContext);
+
   const submitHandler = async (event) => {
     event.preventDefault();
     try {
@@ -44,7 +41,6 @@ function Login() {
 
   return (
     <>
-      <h2 className="m-auto text-xl font-bold">Login</h2>
       <div>
         <form
           onSubmit={submitHandler}
@@ -79,9 +75,14 @@ function Login() {
       >
         {error}
       </p>
-      <Link to={"/signup"} className="text-blue-700 font-bold">
-        Create an account
-      </Link>
+      <div className="flex justify-center gap-12">
+        <Link to={"/signup"} className="text-blue-700 font-bold">
+          Create an account
+        </Link>
+        <Link to={"/forgetPassword"} className="text-blue-700 font-bold">
+          Forget Password
+        </Link>
+      </div>
     </>
   );
 }

@@ -32,7 +32,6 @@ function SignupUser() {
     }
   return (
     <div>
-        <h2 className="m-auto text-xl font-bold">Signup</h2>
         <div>
           <form onSubmit={submtHandler} className="flex flex-col mt-5 items-center gap-y-4">
             <input

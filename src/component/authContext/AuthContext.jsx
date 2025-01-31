@@ -9,14 +9,42 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem("token");
     if (token) {
+      console.log(jwtDecode(token));
       return jwtDecode(token);
     }
     return null;
   });
+  const [navbarAvatar, setNavbarAvatar] = useState(null);
   const [mySocket, setSocket] = useState(() => {
     return (socket = connectSocket());
   });
   const [isPopupOpen, setPopupOpen] = useState(true);
+
+  const getUserProfileData = async () => {
+    const res = await fetch("http://localhost:3000/getProfileImage", {
+      method: "GET",
+      headers: {
+        Authorization: `${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
+    });
+    // Profile image
+    if (res.status == "404") {
+      const data = await res.json();
+      console.log(data.error);
+    } else
+      res
+        .blob()
+        .then((blob) => {
+          console.log(blob);
+          const imageUrl = URL.createObjectURL(blob);
+          setNavbarAvatar(imageUrl);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+  }
+
   useEffect(() => {
     console.log("context");
     const token = localStorage.getItem("token");
@@ -27,6 +55,7 @@ export const AuthProvider = ({ children }) => {
         console.log("Token has expired");
         logout();
       } else {
+        getUserProfileData();
         console.log("Token is still valid");
         const socket = connectSocket();
         socket.emit("login", token);
@@ -58,7 +87,6 @@ export const AuthProvider = ({ children }) => {
       // socket.off("hello");
       socket.emit("login", token);
       const decoded = jwtDecode(token);
-      // console.log(decoded.username);
       socket.emit("myRoom", decoded.username);
       // Set up event listeners after socket is connected
       socket.on("connect", () => {
@@ -71,6 +99,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", token);
     const decoded = jwtDecode(token);
     setUser(decoded);
+    getUserProfileData();
   };
 
   const logout = async () => {
@@ -80,11 +109,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     disconnectSocket();
     setSocket(null);
+    setNavbarAvatar(null);
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, mySocket, isPopupOpen, setPopupOpen }}
+      value={{ user, login, logout, mySocket, isPopupOpen, setPopupOpen, navbarAvatar }}
     >
       {children}
     </AuthContext.Provider>

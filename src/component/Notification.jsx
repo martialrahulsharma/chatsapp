@@ -5,8 +5,7 @@ import { AuthContext } from "./authContext/AuthContext";
 function Notification() {
   const [notification, setNotification] = useState([]);
   const [notificationError, setNotificationError] = useState("");
-  const { user, logout, mySocket } =
-    useContext(AuthContext);
+  const { user, logout, mySocket } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const fetchNotificationHandler = async (username) => {
@@ -20,8 +19,8 @@ function Notification() {
     });
     const data = await res.json();
     console.log(data);
-    if (data.error) setNotificationError(data.error); 
-    if(data.data) setNotification(data.data);
+    if (data.error) setNotificationError(data.error);
+    if (data.data) setNotification(data.data);
     console.log(data.data);
   };
 
@@ -48,10 +47,17 @@ function Notification() {
   const acceptFriendHandler = async (event, dataOfFriend) => {
     event.preventDefault();
     if (mySocket) {
-      mySocket.emit("addFriendRequest", dataOfFriend, user.userId, user.username, (response)=>{
-        setNotification(response.notificationList);
-        if(response.notificationList.length === 0) setNotificationError("No any notifications");
-      });
+      mySocket.emit(
+        "addFriendRequest",
+        dataOfFriend,
+        user.userId,
+        user.username,
+        (response) => {
+          setNotification(response.notificationList);
+          if (response.notificationList.length === 0)
+            setNotificationError("No any notifications");
+        }
+      );
     }
   };
 
@@ -65,39 +71,38 @@ function Notification() {
         user.username,
         (response) => {
           setNotification(response.notificationList);
-          if(response.notificationList.length === 0) setNotificationError("No any notifications");
+          if (response.notificationList.length === 0)
+            setNotificationError("No any notifications");
         }
       );
     }
-  }
+  };
   return (
     <>
+      
       {notification.length !== 0 ? (
         <>
-          <div className="">
-            <h2 className="m-auto text-xl font-bold">Notification</h2>
-          </div>
-
           {notification.map((notification, index) => (
             <div
-              className="bg-slate-300 m-5 p-1 font-bold rounded-lg flex items-center justify-between"
+              className="bg-gradient-to-r from-[#344563] to-[#5A8AA6] m-5 p-1 font-bold rounded-lg flex items-center justify-between"
               key={index}
             >
               <span>{notification.username}</span>
               <div className="flex gap-x-2">
-
-              <span
-                className="rounded-md h-6 px-1 cursor-pointer bg-red-600 hover:bg-red-800 text-white"
-                onClick={(event) => declineFriendRequestHandler(event, notification)}
-              >
-                Decline
-              </span>
-              <span
-                className="rounded-md h-6 px-1 cursor-pointer bg-blue-600 hover:bg-blue-800 text-white"
-                onClick={(event) => acceptFriendHandler(event, notification)}
-              >
-                Accept
-              </span>
+                <span
+                  className="rounded-md h-6 px-1 cursor-pointer bg-red-600 hover:bg-red-800 text-white"
+                  onClick={(event) =>
+                    declineFriendRequestHandler(event, notification)
+                  }
+                >
+                  Decline
+                </span>
+                <span
+                  className="rounded-md h-6 px-1 cursor-pointer bg-blue-600 hover:bg-blue-800 text-white"
+                  onClick={(event) => acceptFriendHandler(event, notification)}
+                >
+                  Accept
+                </span>
               </div>
             </div>
           ))}

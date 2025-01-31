@@ -87,11 +87,11 @@ function ChatRoom({ friendUsername, showChatArea, chatBoxOff }) {
   return (
     <div>
       <div
-        id="messageContainer"
-        className="flex flex-col border-2 m-1 h-96 p-0 overflow-y-auto hide-scrollbar"
-      >
-        <span
-          className="sticky top-0 text-right font-extrabold px-3 text-lg text-red-600 cursor-pointer bg-slate-400"
+  id="messageContainer"
+  className="flex flex-col m-1 h-96 p-0 text-black overflow-y-auto hide-scrollbar"
+>
+  <span
+    className="sticky top-0 self-end font-extrabold text-lg cursor-pointer pr-3"  
           onClick={() => {
             setPopupOpen(true)
             setChatBoxIsOpen(false);
@@ -125,13 +125,13 @@ function ChatRoom({ friendUsername, showChatArea, chatBoxOff }) {
         })}
       </div>
       <div className="mt-5">
-        <form onSubmit={sendMessageHandler} className="flex justify-around">
+        <form onSubmit={sendMessageHandler} className="flex justify-around gap-1">
           <input
             type="text"
             autoFocus="on"
             value={message.message}
             placeholder="Message"
-            className="rounded-lg h-9 px-2"
+            className="rounded-lg h-9 px-2 text-black"
             required
             onChange={(event) => {
               let value = event.target.value;
@@ -143,7 +143,7 @@ function ChatRoom({ friendUsername, showChatArea, chatBoxOff }) {
           />
           <button
             type="submit"
-            className="rounded-lg h-9 w-12 cursor-pointer bg-blue-800"
+            className="rounded-lg h-9 w-12 cursor-pointer bg-blue-800 font-bold hover:bg-blue-700"
           >
             Send
           </button>
