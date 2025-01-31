@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
+import nodemailer from "nodemailer";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import verifyToken from "../middleware/authMiddleware.js";
@@ -14,11 +15,77 @@ import { ProfileSchema } from "./profileSchema.js";
 import { AddedFriendListModel } from "./addedFriendListSchema.js";
 import { ChatRoomModel } from "./getChatsSchema.js";
 import { notificationSchemaModel } from "./notificationSchema.js";
+import { error } from "console";
 
 const router = express.Router();
 dotenv.config();
 
 const jwtKey = process.env.JWT_SECRET_KEY;
+
+// configure the email transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+// otp store in database
+const otpStore = {};
+const OTP_EXPIRATION_TIME = 5 * 60 * 1000; // 5 minutes
+
+// send OTP via email
+router.post("/sendotp", async (req, res) => {
+  const {email} = req.body;
+  // Generate a random 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore[email] = { otp, expiresAt: Date.now() + OTP_EXPIRATION_TIME };
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
+    };
+    await transporter.sendMail(mailOptions).then(data=>{
+      console.log(data);
+      res.status(200).json(data, {status: "success", message: "Please check your Email"});
+    }).catch(error=>{
+      console.log(error);
+      res.status(500).json({ message: "Error sending OTP", error });
+    })
+  } catch (error) {
+    console.log(error);
+    
+  }
+});
+
+// Verify OTP
+const verifyOTP = (email, userOtp) => {
+  if (!otpStore[email]) return { success: false, message: "OTP expired or invalid." };
+
+  const { otp, expiresAt } = otpStore[email];
+
+  if (Date.now() > expiresAt) {
+      delete otpStore[email];
+      return { success: false, message: "OTP expired." };
+  }
+
+  if (userOtp === otp) {
+      delete otpStore[email];
+      return { success: true, message: "OTP verified successfully!" };
+  }
+
+  return { success: false, message: "Invalid OTP." };
+};
+// Route to verify OTP
+router.post("/verify-otp", (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) return res.status(400).json({ message: "Email and OTP are required" });
+
+  const response = verifyOTP(email, otp);
+  res.status(response.success ? 200 : 400).json(response);
+});
 
 router.post("/signup", async (req, res) => {
   try {
@@ -62,7 +129,11 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: "Authentication failed" });
     }
     const token = jwt.sign(
-      { username: existingUser.username, userId: existingUser._id },
+      {
+        username: existingUser.username,
+        userId: existingUser._id,
+        name: existingUser.name,
+      },
       jwtKey,
       { expiresIn: "1d" }
     );
@@ -150,7 +221,6 @@ router.get("/getProfileImage", verifyToken, async (req, res) => {
     }
     const __dirname = path.resolve();
     const imagePath = path.join(__dirname, "./uploads/" + data.img);
-
     // Check if the file exists
     if (!fs.existsSync(imagePath)) {
       return res.status(404).json({ error: "Image file not found" });
@@ -219,7 +289,12 @@ router.post("/findFriend", verifyToken, async (req, res) => {
       });
       res
         .status(200)
-        .json({ filteredFriend, usernmeOfNotificationList, myFriendList, requestedFriendList });
+        .json({
+          filteredFriend,
+          usernmeOfNotificationList,
+          myFriendList,
+          requestedFriendList,
+        });
     } else res.status(404).json({ error: "Username not found" });
   } catch (error) {
     console.log(error);
@@ -271,16 +346,18 @@ router.get("/myfriends", verifyToken, async (req, res) => {
           return profileData;
         })
       );
-
+      // const __dirname = path.resolve();
       // Process the friendListData to get only required fields
       const requiredFriendData = friendListData.map((friendData) => {
         return {
           name: friendData.name,
           username: friendData.userId.username,
           isLoggedIn: friendData.isLoggedIn,
+          // img: path.join(__dirname, "./uploads/"+friendData.img),
+          img: friendData.img ? `/uploads/${friendData.img}` : "",
         };
       });
-      // console.log(requiredFriendData);
+
       // Return the required friend data
       return requiredFriendData;
     }

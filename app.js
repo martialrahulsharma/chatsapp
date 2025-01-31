@@ -13,6 +13,7 @@ import { ProfileSchema } from "./model/profileSchema.js";
 import { unreadMessageModel } from "./model/unreadMessageSchema.js";
 import { notificationSchemaModel } from "./model/notificationSchema.js";
 import { AddedFriendListModel } from "./model/addedFriendListSchema.js";
+import path from "path";
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -471,6 +472,10 @@ conn.on("error", () => {
   console.log("Error connection to database");
   process.exit();
 });
+
+// Serve uploaded images statically
+ const __dirname = path.resolve();
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //Router
 app.use(router);
