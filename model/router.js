@@ -7,15 +7,13 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
-import { Server } from "socket.io";
-import { createServer } from "http";
+import { redisClient } from "./redisServer.js";
 import verifyToken from "../middleware/authMiddleware.js";
 import { SignupModel } from "./signupSchema.js";
 import { ProfileSchema } from "./profileSchema.js";
 import { AddedFriendListModel } from "./addedFriendListSchema.js";
 import { ChatRoomModel } from "./getChatsSchema.js";
 import { notificationSchemaModel } from "./notificationSchema.js";
-import { error } from "console";
 
 const router = express.Router();
 dotenv.config();
@@ -31,74 +29,141 @@ const transporter = nodemailer.createTransport({
   },
 });
 // otp store in database
-const otpStore = {};
-const OTP_EXPIRATION_TIME = 5 * 60 * 1000; // 5 minutes
+// const otpStore = {};
+const OTP_EXPIRATION_TIME = 300; // 5 minutes
 
 // send OTP via email
 router.post("/sendotp", async (req, res) => {
-  const {email} = req.body;
-  // Generate a random 6-digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  otpStore[email] = { otp, expiresAt: Date.now() + OTP_EXPIRATION_TIME };
+  const { email } = req.body;
   try {
+    // connect redis
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
+    // check key existing
+    const existEmailKey = await redisClient.get(email);
+    if (existEmailKey)
+      return res
+        .status(500)
+        .json({ error: "Please Wait before requesting new OTP" });
+    const emailExist = await SignupModel.findOne({ email });
+    if (emailExist == null) {
+      return res.status(500).json({ error: "Email not found" });
+    }
+
+    // Generate a random 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // otpStore[email] = { otp, expiresAt: Date.now() + OTP_EXPIRATION_TIME };
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Your OTP Code",
       text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
     };
-    await transporter.sendMail(mailOptions).then(data=>{
-      console.log(data);
-      res.status(200).json(data, {status: "success", message: "Please check your Email"});
-    }).catch(error=>{
-      console.log(error);
-      res.status(500).json({ message: "Error sending OTP", error });
+    await transporter
+      .sendMail(mailOptions)
+      .then(async (data) => {
+        if (data.rejected.length == 0) {
+          const hashedOTP = await bcrypt.hash(otp, 10);
+
+          await redisClient.setEx(email, OTP_EXPIRATION_TIME, hashedOTP);
+          return res.status(200).json({
+            status: "success",
+            message: "Please check your Email",
+            timeLeft: OTP_EXPIRATION_TIME,
+            data,
+          });
+        }
+        return res.status(500).json({ error: "OTP could not send, try again" });
+      })
+      .catch((error) => {
+        console.log(error);
+        return res.status(500).json({ error: "Error sending OTP", error });
+      });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Somthing went wrong" });
+  }
+});
+
+// Route to verify OTP
+router.post("/verify_otp", async (req, res) => {
+  const { email, OTP } = req.body;
+  console.log("Received:", email, OTP);
+
+  try {
+    // Validate inputs
+    if (!email || !OTP) {
+      return res.status(400).json({ error: "Email and OTP are required" });
+    }
+
+    // Ensure Redis connection
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
+
+    // Get OTP from Redis
+    const storedOTP = await redisClient.get(email);
+    console.log("Stored OTP:", storedOTP);
+
+    if (!storedOTP) {
+      return res.status(400).json({ error: "OTP expired or invalid" });
+    }
+
+    // Compare OTPs
+    const OTP_match = await bcrypt.compare(OTP, storedOTP);
+    if (!OTP_match) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Send success response
+    return res.status(200).json({ message: "OTP Verified" });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+router.post("/changePassword", async (req, res)=>{
+  const {email, newPassword} = req.body;
+  console.log(email, newPassword);
+  try {
+    if(!email) return res.status(400).json({error: "Email is required"})
+    if(!redisClient.isOpen) await redisClient.connect();
+    const emailKeyExist = await redisClient.get(email);
+    if(!emailKeyExist) return res.status(400).json({error: "OTP expired, try again"});
+    const signupData = await SignupModel.findOne({email});
+    if(!signupData) return res.status(400).json({error: "Email not found"});
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    signupData.password = hashedPassword;
+    await signupData.save().then(()=>{
+      res.status(200).json({message: "Password change successfully"});
     })
   } catch (error) {
     console.log(error);
-    
+    return res.status(500).json({error: "Somthing went wrong"});
   }
-});
-
-// Verify OTP
-const verifyOTP = (email, userOtp) => {
-  if (!otpStore[email]) return { success: false, message: "OTP expired or invalid." };
-
-  const { otp, expiresAt } = otpStore[email];
-
-  if (Date.now() > expiresAt) {
-      delete otpStore[email];
-      return { success: false, message: "OTP expired." };
-  }
-
-  if (userOtp === otp) {
-      delete otpStore[email];
-      return { success: true, message: "OTP verified successfully!" };
-  }
-
-  return { success: false, message: "Invalid OTP." };
-};
-// Route to verify OTP
-router.post("/verify-otp", (req, res) => {
-  const { email, otp } = req.body;
-  if (!email || !otp) return res.status(400).json({ message: "Email and OTP are required" });
-
-  const response = verifyOTP(email, otp);
-  res.status(response.success ? 200 : 400).json(response);
-});
+})
 
 router.post("/signup", async (req, res) => {
   try {
-    const { name, username, password } = req.body;
-    const existingUser = await SignupModel.findOne({ username });
+    const { name, username, email, password } = req.body;
+    const existingUser = await SignupModel.findOne({
+      $or: [{ email }, { username }],
+    });
     if (existingUser) {
-      return res.status(400).json({ error: "Username already exist" });
+      let message = "";
+      if (existingUser.email === email) message += "Email already exist.";
+      if (existingUser.username === username)
+        message += "Username already exist.";
+      return res.status(400).json({ error: message });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const doc = new SignupModel({
       _id: new mongoose.Types.ObjectId(),
       name,
       username,
+      email,
       password: hashedPassword,
     });
 
@@ -287,14 +352,12 @@ router.post("/findFriend", verifyToken, async (req, res) => {
           },
         },
       });
-      res
-        .status(200)
-        .json({
-          filteredFriend,
-          usernmeOfNotificationList,
-          myFriendList,
-          requestedFriendList,
-        });
+      res.status(200).json({
+        filteredFriend,
+        usernmeOfNotificationList,
+        myFriendList,
+        requestedFriendList,
+      });
     } else res.status(404).json({ error: "Username not found" });
   } catch (error) {
     console.log(error);
