@@ -40,8 +40,8 @@ function Login() {
   }, []);
 
   return (
-    <>
-      <div>
+    <div className="flex flex-col items-center gap-2">
+      <div >
         <form
           onSubmit={submitHandler}
           className="flex flex-col mt-5 items-center gap-y-4"
@@ -64,7 +64,7 @@ function Login() {
           />
           <button
             type="submit"
-            className="rounded-lg h-9 w-12 cursor-pointer bg-blue-800"
+            className="rounded-lg h-9 w-12 cursor-pointer bg-blue-800 text-white"
           >
             Login
           </button>
@@ -75,15 +75,15 @@ function Login() {
       >
         {error}
       </p>
-      <div className="flex justify-center gap-12">
-        <Link to={"/signup"} className="text-blue-700 font-bold">
-          Create an account
-        </Link>
-        <Link to={"/forgetPassword"} className="text-blue-700 font-bold">
+      <div className="flex justify-center w-fit gap-12 px-2 rounded-md bg-[#344563] text-blue-200">
+        <Link to={"/forgetPassword"}>
           Forget Password
         </Link>
+        <Link to={"/signup"} >
+          Create an account
+        </Link>
       </div>
-    </>
+    </div>
   );
 }
 

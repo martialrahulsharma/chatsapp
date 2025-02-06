@@ -19,6 +19,7 @@ function MyRouter() {
 
     useEffect(() => {
       console.log(onclick);
+      console.log(location.pathname);
       switch (location.pathname) {
         case "/notification":
           setTitle("Notification");

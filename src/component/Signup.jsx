@@ -4,6 +4,7 @@ function SignupUser() {
     
   const [name, setName] = useState("")
     const [username, setUsername] = useState("")
+    const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [message, setMessage] = useState("")
@@ -23,7 +24,7 @@ function SignupUser() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, username, password }),
+            body: JSON.stringify({ name, username, email, password }),
           });
           const data = await res.json();
           if (data.message) setMessage(data.message);
@@ -46,7 +47,15 @@ function SignupUser() {
               type="text"
               value={username}
               onChange={(e)=>setUsername(e.target.value)}
-              placeholder="UserName"
+              placeholder="Username"
+              required
+              className="rounded-lg h-9 pl-4"
+            />
+            <input
+              type="email"
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
+              placeholder="Email"
               required
               className="rounded-lg h-9 pl-4"
             />

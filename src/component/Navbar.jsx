@@ -6,9 +6,8 @@ const Navbar = ({ navBarHidden, title }) => {
   const [showSidebar, setShowSidebar] = useState(navBarHidden);
   // const [isVisible, setIsVisible] = useState(showSidebar);
   // const [title, setTitle] = useState("");
-  const [activeNavbar, setActiveNavbar] = useState("myFriend")
+  const [activeNavbar, setActiveNavbar] = useState(title)
   const { user, logout, navbarAvatar } = useContext(AuthContext);
-  console.log(user);
 
   return (
     <div className="relative">
@@ -82,7 +81,7 @@ const Navbar = ({ navBarHidden, title }) => {
         </div>
       </div>
       <div
-  className={`flex flex-col absolute text-slate-300 bg-gradient-to-r from-[#344563] to-[#5A8AA6] font-bold z-40 
+  className={`flex flex-col absolute items-start text-slate-300 bg-gradient-to-r from-[#344563] to-[#5A8AA6] font-bold z-40 
     transition-all duration-300 ease-in-out 
     ${showSidebar ? "translate-y-0 opacity-100 scale-100" : "translate-y-[-20px] opacity-0 scale-95 collapse"}
   `}
@@ -90,7 +89,7 @@ const Navbar = ({ navBarHidden, title }) => {
         {user ? (
           <>
             <div>
-              <h6 className="text-slate-300 font-semibold border-b-2">
+              <h6 className="text-slate-300 font-semibold border-b-2 pl-1">
                 {user.name}
               </h6>
             </div>
