@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 import { AuthContext } from "./authContext/AuthContext";
 
 function Notification() {
@@ -9,7 +10,7 @@ function Notification() {
   const navigate = useNavigate();
 
   const fetchNotificationHandler = async (username) => {
-    const res = await fetch("http://localhost:3000/getNotification", {
+    const res = await fetch(`${config.VARTA_APP_URL}getNotification`, {
       method: "POST",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,

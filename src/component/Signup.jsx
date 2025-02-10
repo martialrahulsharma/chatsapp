@@ -1,4 +1,5 @@
 import {useState} from "react";
+import config from "../config";
 
 function SignupUser() {
     
@@ -19,7 +20,7 @@ function SignupUser() {
           setError("Password did not match")
           return;
         }
-        const res = await fetch('http://localhost:3000/signup', {
+        const res = await fetch(`${config.VARTA_APP_URL}signup`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -15,7 +15,7 @@ function Login() {
   const submitHandler = async (event) => {
     event.preventDefault();
     try {
-      const res = await fetch(`${config.VARTA_APP_URL}/login`, {
+      const res = await fetch(`${config.VARTA_APP_URL}login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

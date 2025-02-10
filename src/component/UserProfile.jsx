@@ -1,12 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./authContext/AuthContext";
 import { useNavigate } from "react-router-dom";
-// import { fetchApi } from "./fetchApi";
+import config from "../config";
 
 function UserProfile() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [profileImage, setProfileImage] = useState("");
-  const [getProfileImage, setGetProfileImage] = useState(null);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -29,7 +28,7 @@ function UserProfile() {
     formData.append("image", profileImage);
     formData.append("name", name);
     formData.append("user", user.userId);
-    const res = await fetch("http://localhost:3000/saveProfile", {
+    const res = await fetch(`${config.VARTA_APP_URL}saveProfile`, {
       method: "POST",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
@@ -43,7 +42,7 @@ function UserProfile() {
   };
 
   const getUserProfileData = async () => {
-    const res = await fetch("http://localhost:3000/getProfileImage", {
+    const res = await fetch(`${config.VARTA_APP_URL}getProfileImage`, {
       method: "GET",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
@@ -51,7 +50,7 @@ function UserProfile() {
       },
     });
 
-    const resData = await fetch("http://localhost:3000/getProfileData", {
+    const resData = await fetch(`${config.VARTA_APP_URL}getProfileData`, {
       method: "GET",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,

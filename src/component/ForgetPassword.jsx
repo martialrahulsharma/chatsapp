@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import ChangePassword from "./ChangePassword";
+import config from "../config";
 // import {useNavigate} from 'react-router-dom'
 
 const ForgetPassword = () => {
@@ -19,7 +20,7 @@ const ForgetPassword = () => {
     event.preventDefault();
     setShowMessage(true);
     try {
-      const res = await fetch("http://localhost:3000/sendotp", {
+      const res = await fetch(`${config.VARTA_APP_URL}sendotp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,7 +48,7 @@ const ForgetPassword = () => {
   const verifyOTPHandler = async (event) => {
     event.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/verify_otp", {
+      const res = await fetch(`${config.VARTA_APP_URL}verify_otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

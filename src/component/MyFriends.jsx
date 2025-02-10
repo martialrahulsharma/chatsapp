@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import config from "../config";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./authContext/AuthContext";
 import ChatRoom from "./ChatRoom";
@@ -13,9 +14,7 @@ function MyFriends() {
     useContext(AuthContext);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState({ chatIsOpen: false, refresh: true });
-  const [friendAvatar, setFriendAvatar] = useState(null);
   const [unreadMessages, setUnreadMessage] = useState([]);
-  const [isUserJoinRoom, setIsUserJoinRoom] = useState(true);
 
   const navigate = useNavigate();
 
@@ -23,7 +22,7 @@ function MyFriends() {
     setError("");
     setShowChatArea(false);
     try {
-      const res = await fetch("http://localhost:3000/myfriends", {
+      const res = await fetch(`${config.VARTA_APP_URL}/myfriends`, {
         method: "GET",
         headers: {
           Authorization: `${localStorage.getItem("token")}`,

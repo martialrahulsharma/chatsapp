@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 import { AuthContext } from "./authContext/AuthContext";
 
 function AddFriend() {
@@ -24,7 +25,7 @@ function AddFriend() {
     setError("");
     message.error = "";
     message.success = "";
-    const res = await fetch("http://localhost:3000/findFriend", {
+    const res = await fetch(`${config.VARTA_APP_URL}findFriend`, {
       method: "POST",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
