@@ -463,7 +463,7 @@ app.use(
 );
 
 // Connecting to database
-mongoose.connect(dburl);
+mongoose.connect(process.env.DB_URL);
 const conn = mongoose.connection;
 conn.once("open", () => {
   console.log("Database connect succesfully");
