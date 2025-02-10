@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import config from "../config";
 import { AuthContext } from "./authContext/AuthContext";
 
 function Login() {
@@ -10,10 +11,11 @@ function Login() {
   const navigate = useNavigate();
   const { user, login } = useContext(AuthContext);
 
+
   const submitHandler = async (event) => {
     event.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/login", {
+      const res = await fetch(`${config.VARTA_APP_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
