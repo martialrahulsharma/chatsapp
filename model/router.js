@@ -389,9 +389,6 @@ router.get("/myfriends", verifyToken, async (req, res) => {
     const data = await AddedFriendListModel.findOne({
       userId: req.userId,
     }).populate("myFriendList");
-    // const profileData = await ProfileSchema.findOne({ userId: req.userId }).populate("userId");
-    // console.log(profileData);
-    // const profileData = await
     if (!data) {
       return res.status(400).json({ error: "No friends found" });
     }
@@ -409,14 +406,12 @@ router.get("/myfriends", verifyToken, async (req, res) => {
           return profileData;
         })
       );
-      // const __dirname = path.resolve();
       // Process the friendListData to get only required fields
       const requiredFriendData = friendListData.map((friendData) => {
         return {
           name: friendData.name,
           username: friendData.userId.username,
           isLoggedIn: friendData.isLoggedIn,
-          // img: path.join(__dirname, "./uploads/"+friendData.img),
           img: friendData.img ? `/uploads/${friendData.img}` : "",
         };
       });

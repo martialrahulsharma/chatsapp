@@ -20,28 +20,52 @@ const port = process.env.PORT || 3000;
 const app = express();
 
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
-const DB_URL = "DB_URL = mongodb+srv://martialrahulsharma:lWZjToMnckcbAqMY@chatapp.c1nmqon.mongodb.net/?retryWrites=true&w=majority&appName=chatApp"
+const DB_URL = process.env.DB_URL;
+console.log(DB_URL);
+const allowedOrigins = [
+  'https://myvartaapp.web.app', // Your Firebase hosting URL
+  'https://chatsapp-616298443940.asia-south1.run.app', // Your backend URL (important for same-origin requests)
+];
+
+if (process.env.NODE_ENV === 'development') {
+  console.log('Development mode: Allowing local origins');
+  allowedOrigins.push('http://localhost:5173'); // For local development
+}
 
 //Middleware
 app.use(
   cors({
-    origin: "https://myvartaapp.web.app",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+      } else {
+          callback(new Error('Not allowed by CORS'));
+      }
+  },
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', "X-Requested-With", "Accept"],
   })
 );
+
 
 const server = createServer(app);
 export const io = new Server(server, {
   cors: {
-    origin: "https://myvartaapp.web.app",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+      } else {
+          callback(new Error('Not allowed by CORS'));
+      }
+  },
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', "X-Requested-With", "Accept"],
   },
 });
 app.use(json());
+app.options("*", cors()); // Handles preflight requests
 
 io.on("connection", (socket) => {
   const loginHandler = async (token) => {
@@ -462,8 +486,6 @@ app.use(bodyParser.json());
 
 //Urlencoded data parsing
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.options("*", cors()); // Handles preflight requests
 
 // Connecting to database
 mongoose.connect(DB_URL);
