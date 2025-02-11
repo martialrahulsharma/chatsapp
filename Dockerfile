@@ -1,4 +1,4 @@
-FROM node:18
+FROM node
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --only=production
