@@ -506,6 +506,6 @@ app.use(router);
 app.use("/protected", protectedRouter);
 
 //Start the server
-server.listen(port, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`Server run on port ${port}`);
 });
