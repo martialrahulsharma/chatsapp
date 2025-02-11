@@ -22,8 +22,9 @@ function MyFriends() {
     setError("");
     setShowChatArea(false);
     try {
-      const res = await fetch(`${config.VARTA_APP_URL}/myfriends`, {
+      const res = await fetch(`${config.VARTA_APP_URL}myfriends`, {
         method: "GET",
+        credentials: "include",
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
@@ -36,7 +37,7 @@ function MyFriends() {
         setFriendList(data);
       }
     } catch (error) {
-      alert(error);
+      console.log(error);
     }
   };
 
