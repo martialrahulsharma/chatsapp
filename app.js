@@ -24,7 +24,6 @@ const DB_URL = process.env.DB_URL;
 console.log(DB_URL);
 const allowedOrigins = [
   'https://myvartaapp.web.app', // Your Firebase hosting URL
-  'https://chatsapp-616298443940.asia-south1.run.app', // Your backend URL (important for same-origin requests)
 ];
 
 if (process.env.NODE_ENV === 'development') {
