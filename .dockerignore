@@ -1,19 +1,5 @@
 # Ignore node_modules (dependencies should be installed inside the container)
 node_modules
-
-# Ignore logs
-logs
-*.log
-
-# Ignore build files
-dist
-build
-
-# Ignore Docker and Git files
-.dockerignore
-Dockerfile
 .git
-.gitignore
+Dockerfile
 
-# Ignore system files
-npm-debug.log*
