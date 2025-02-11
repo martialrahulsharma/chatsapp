@@ -17,18 +17,18 @@ import path from "path";
 
 dotenv.config();
 const port = process.env.PORT || 3000;
-const dburl =
-  "mongodb+srv://martialrahulsharma:lWZjToMnckcbAqMY@chatapp.c1nmqon.mongodb.net/?retryWrites=true&w=majority&appName=chatApp";
 const app = express();
 
-const jwtSecretKey = process.env.JWT_SECRET_KEY;
+const jwtSecretKey = process.env.JWT_SECRET_KEY;/
+const DB_URL = "DB_URL = mongodb+srv://martialrahulsharma:lWZjToMnckcbAqMY@chatapp.c1nmqon.mongodb.net/?retryWrites=true&w=majority&appName=chatApp"
 
 const server = createServer(app);
 export const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "https://myvartaapp.web.app",
     methods: ["GET", "POST"],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   },
 });
 
@@ -456,14 +456,29 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(json());
 app.use(
   cors({
-    origin: "*",
+    origin: "https://myvartaapp.web.app",
     methods: ["GET", "POST"],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+// app.options("*", cors()); // Handles preflight requests
+
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "https://myvartaapp.web.app");
+//   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+//   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//   res.header("Access-Control-Allow-Credentials", "true");
+
+//   if (req.method === "OPTIONS") {
+//     return res.status(204).send(); // Send a 204 No Content for preflight requests
+//   }
+
+//   next();
+// });
 
 // Connecting to database
-mongoose.connect(process.env.DB_URL);
+mongoose.connect(DB_URL);
 const conn = mongoose.connection;
 conn.once("open", () => {
   console.log("Database connect succesfully");
