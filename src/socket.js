@@ -6,7 +6,7 @@ let socket;
 const connectSocket = () => {
   if (!socket) {
     // Initialize socket connection if it doesn’t already exist
-    socket = io(config.VARTA_APP_URL, { transports: ["websocket"] });
+    socket = io(config.VARTA_APP_URL, { transports: ["polling"] });
   } else if (!socket.connected) {
     // If socket exists but is disconnected, reconnect it
     socket.connect();
