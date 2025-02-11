@@ -21,7 +21,7 @@ const app = express();
 
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
 const DB_URL = process.env.DB_URL;
-console.log(DB_URL);
+console.log('mongoDBurl',DB_URL);
 const allowedOrigins = [
   'https://myvartaapp.web.app', // Your Firebase hosting URL
 ];
