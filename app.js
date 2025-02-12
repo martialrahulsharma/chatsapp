@@ -16,18 +16,16 @@ import { AddedFriendListModel } from "./model/addedFriendListSchema.js";
 import path from "path";
 
 dotenv.config();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 const app = express();
 
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
 const DB_URL = process.env.DB_URL;
-console.log('mongoDBurl',DB_URL);
 const allowedOrigins = [
   'https://myvartaapp.web.app', // Your Firebase hosting URL
 ];
 
 if (process.env.NODE_ENV === 'development') {
-  console.log('Development mode: Allowing local origins');
   allowedOrigins.push('http://localhost:5173'); // For local development
 }
 
@@ -36,7 +34,6 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        console.log('origin', origin);
           callback(null, true);
       } else {
           callback(new Error('Not allowed by CORS'));
@@ -165,8 +162,6 @@ io.on("connection", (socket) => {
             $set: { "senderMessage.$.message": [] }, // Clear the message array where sender matches
           }
         );
-
-        // console.log("Update result:", result);
       } catch (error) {
         console.error("Error updating messages:", error);
       }
@@ -174,7 +169,6 @@ io.on("connection", (socket) => {
       let chat = await ChatRoomModel.findOne({ roomId });
       if (chat !== null) {
         await chat.save().then(() => {
-          // console.log(chat.message);
           io.to(roomId).emit("receive_message", chat.message);
           io.to(user2).emit("myFriendJoinRoom", `${user1} joining room`);
         });
@@ -278,7 +272,6 @@ io.on("connection", (socket) => {
     myUsername,
     callback
   ) => {
-    console.log(244, whomeRequesterUsername, myUsername);
     try {
       let data = await notificationSchemaModel.findOne({
         username: whomeRequesterUsername.username,
@@ -297,7 +290,6 @@ io.on("connection", (socket) => {
         await data.save().then(() => {
           if(callback){
             callback(data.requestedFriendList);
-            console.log(data.requestedFriendList);
           }
         });
       } else if(myData.requestedFriendList.some(entry => entry.username === whomeRequesterUsername.username)){
@@ -348,7 +340,6 @@ io.on("connection", (socket) => {
   };
 
   const addFriendRequestHandler = async (dataOfFriend, userId, username, callback) => {
-    console.log(315, dataOfFriend, userId, username);
     try {
       let myData = await AddedFriendListModel.findOne({ userId });
       const friendData = await AddedFriendListModel.findOne({
@@ -360,7 +351,6 @@ io.on("connection", (socket) => {
           userId: userId,
           myFriendList: [dataOfFriend.userId],
         });
-        console.log(327, myData);
         await myData.save();
       } else if (myData.myFriendList.includes(dataOfFriend.userId)) {
         console.log("Friend allready exist");
@@ -409,7 +399,6 @@ io.on("connection", (socket) => {
   };
 
   const declineFriendRequestHandler = async (dataOfFriend, userId, username, callback) => {
-    console.log(376, dataOfFriend, userId, username);
     try {
       // access my notification data
       const myNotificationData = await notificationSchemaModel.findOne({username})
