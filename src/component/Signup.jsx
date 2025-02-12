@@ -22,6 +22,7 @@ function SignupUser() {
         }
         const res = await fetch(`${config.VARTA_APP_URL}signup`, {
             method: 'POST',
+            credentials: "include",
             headers: {
               'Content-Type': 'application/json',
             },

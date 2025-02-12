@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 
 function ChangePassword({ email }) {
   const [newPassword, setNewPassword] = useState("");
@@ -26,8 +27,9 @@ function ChangePassword({ email }) {
       });
       return;
     }
-    const res = await fetch("http://localhost:3000/changePassword", {
+    const res = await fetch(`${config.VARTA_APP_URL}changePassword`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },

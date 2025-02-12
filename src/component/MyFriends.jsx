@@ -187,7 +187,7 @@ function MyFriends() {
                 }}
               >  
                 <div className="flex flex-row items-center gap-x-2">
-                {myFriendsData.img ? <img src={`http://localhost:3000${myFriendsData.img}`} className="w-8 h-8 rounded-full"/> : <img
+                {myFriendsData.img ? <img src={`${config.VARTA_APP_URL}${myFriendsData.img}`} className="w-8 h-8 rounded-full"/> : <img
                   src={`https://ui-avatars.com/api/?name=${myFriendsData.name
                     .split(" ")
                     .join("+")}`}

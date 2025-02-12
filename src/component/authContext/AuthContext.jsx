@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext } from "react";
 import { jwtDecode } from "jwt-decode";
 import { connectSocket, disconnectSocket } from "../../socket.js";
+import config from "../../config.js";
 
 export const AuthContext = createContext();
 
@@ -21,8 +22,9 @@ export const AuthProvider = ({ children }) => {
   const [isPopupOpen, setPopupOpen] = useState(true);
 
   const getUserProfileData = async () => {
-    const res = await fetch("http://localhost:3000/getProfileImage", {
+    const res = await fetch(`${config.VARTA_APP_URL}getProfileImage`, {
       method: "GET",
+      credentials: "include",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
         "Content-Type": "application/json",

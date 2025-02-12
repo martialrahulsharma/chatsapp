@@ -27,6 +27,7 @@ function AddFriend() {
     message.success = "";
     const res = await fetch(`${config.VARTA_APP_URL}findFriend`, {
       method: "POST",
+      credentials: "include",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
         "Content-Type": "application/json",

@@ -30,6 +30,7 @@ function UserProfile() {
     formData.append("user", user.userId);
     const res = await fetch(`${config.VARTA_APP_URL}saveProfile`, {
       method: "POST",
+      credentials: "include",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
       },
@@ -44,6 +45,7 @@ function UserProfile() {
   const getUserProfileData = async () => {
     const res = await fetch(`${config.VARTA_APP_URL}getProfileImage`, {
       method: "GET",
+      credentials: "include",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
@@ -52,6 +54,7 @@ function UserProfile() {
 
     const resData = await fetch(`${config.VARTA_APP_URL}getProfileData`, {
       method: "GET",
+      credentials: "include",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
       },

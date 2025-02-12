@@ -22,6 +22,7 @@ const ForgetPassword = () => {
     try {
       const res = await fetch(`${config.VARTA_APP_URL}sendotp`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -50,6 +51,7 @@ const ForgetPassword = () => {
     try {
       const res = await fetch(`${config.VARTA_APP_URL}verify_otp`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },

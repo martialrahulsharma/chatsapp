@@ -1,11 +1,9 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { AuthContext } from "./authContext/AuthContext";
 
 const Navbar = ({ navBarHidden, title }) => {
   const [showSidebar, setShowSidebar] = useState(navBarHidden);
-  // const [isVisible, setIsVisible] = useState(showSidebar);
-  // const [title, setTitle] = useState("");
   const [activeNavbar, setActiveNavbar] = useState(title)
   const { user, logout, navbarAvatar } = useContext(AuthContext);
 

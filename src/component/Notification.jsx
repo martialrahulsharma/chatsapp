@@ -12,6 +12,7 @@ function Notification() {
   const fetchNotificationHandler = async (username) => {
     const res = await fetch(`${config.VARTA_APP_URL}getNotification`, {
       method: "POST",
+      credentials: "include",
       headers: {
         Authorization: `${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
